@@ -1,0 +1,146 @@
+------- Ex1 Plugin -------
+By: Yair Oren, ID 326277860 and Tal Glikin, ID 326304292
+
+The plugin implements 3 callable maya functions: 
+colorMeshVerticesCmd, inverseMatrixCmd and topologyStatisticsCmd
+
+(note that parameters in [brackets] are optional, and values in 
+<angular brackets> are placeholders)
+
+
+---------------------------
+
+
+1. colorMeshVerticesCmd:
+Syntax:		colorMeshVerticesCmd [-min <MINVALUE>] [-max <MAXVALUE>]
+Needs a mesh to be selected in order to function.
+
+Requirements: the mesh should be triangular, and all faces in it must be planar,
+laminar and non-intersecting.
+
+Functionality: creates 2 color sets for the mesh, valenceColorSet and curvatureColorSet.
+In valenceColorSet, each vertex in the mesh is colored according to its valence in
+the mesh, using the following formula:
+
+VALENCE		COLOR (R,G,B)
+>=9			(255, 0, 0)
+8			(0, 0, 255)
+7			(255, 255, 128)
+6			(0, 255, 0)
+5			(255, 0, 255)
+4			(0, 255, 255)
+<=3			(128, 0, 255)
+
+In curvatureColorSet, each vertex is colored according to its Gaussian curvature,
+using MatLab's jet color scheme as guide. The minimum and maximum bounds on the
+curvature are calculated automatically, but can be overriden by specifiying the
+-min and -max flags. These bounds are also printed out to the script editor as feedback.
+
+
+
+---------------------------
+
+
+2. inverseMatrixCmd
+Syntax:		inverseMatrixCmd <1> <2> <3> <4> <5> <6> <7> <8> <9>
+Each of the values <1> through <9> can be a floating-point number.
+
+Functionality: inverts the 3x3 matrix whose elements are 
+[[<1>, <2>, <3>]
+ [<4>, <5>, <6>]
+ [<7>, <8>, <9>]]
+ printing the inverse matrix to standard output (the output window).
+ If the matrix isn't invertible, an error message is printed out instead.
+
+
+---------------------------
+
+
+3. topologyStatisticsCmd
+Syntax:		topologyStatisticsCmd
+Needs a mesh to be selected in order to function.
+
+Functionality:
+Prints some basic details about the topology of the mesh to the script editor.
+The printed details are:
+1. The mesh's name.
+2. Whether the mesh is a triangular mesh (i.e. all faces are triangular) or not.
+3. The number of vertices, edges and faces of the mesh.
+4. The number of connected components in the mesh.
+5. The number of boundaries in the mesh.
+6. The Euler Characteristic of the mesh, as directly calculated from definition.
+7. The genus of the mesh. The genus is calculated using the Euler-Poincare formula
+X= 2(C-g) - b, 
+where:
+	a. X is the Euler Characteristic
+	b. C is the no. of connected components
+	c. g is the genus
+	d. b is the no. of boundaries.
+8. The Euler Characteristic of the mesh as computed from the Global Gauss-Bonnet
+theorem. Due to implementation details, this results in an accurate value only when
+the mesh is triangular. If it is not, a warning message about the inaccuracy is 
+additionally printed out.
+
+
+
+------- Ex2 Plugin -------
+
+this plugin implements two linear parameterization methods: harmonicFlatteningCmd and LSCMCmd.
+
+
+---------------------------
+
+
+1. harmonicFlatteningCmd
+Syntax: harmonicFlatteningCmd
+Needs a mesh to be selected in order to work.
+
+Requirements: the selected mesh should be a triangle mesh with all faces being planar, laminar and non-intersecting. 
+Also needs to have a disk topology (genus = 0 and a single boundary).
+
+Functionality: Discretize the Laplace-Beltrami operator using different sets of weights.
+the sets are:
+a. Uniform Weights: W(ij) = 1
+b. Harmonic Weights: W(ij) = (cot(alpha(ij))+cot(betha(ij)))/2 alpha and betha being the angles 
+opposite to the edge connecting vi,vj.
+c. Mean-Value Weights: W(ij) = (tan(gamma(ij)/2)+tan(lambda(ij)/2))/(2*norm(vi-vj))
+It solves the Laplace equation with the fixed boundary positional constraints (Dirichlet boundary conditions)
+using the computed weights by solving the linear system for u,v and applies the obtained parameterization
+to the mesh, mapping each vertex's position to their corresponding u,v values.
+
+
+---------------------------
+
+
+2. LSCMCmd
+Syntax: LSCMCmd
+needs a mesh to be selected in order to work
+
+Requirements:the selected mesh should be a triangle mesh with all faces being planar, laminar and non-intersecting. 
+Also needs to have a disk topology (genus = 0 and a single boundary).
+
+Functionality: Obtains a parameterization of the given mesh by computing a
+discrete conformal map. firstly, it will fix 2 boundary vertices to (0,0) and (0,1), one with index 0 and the second the furthest 
+(it will found the furthest vertex by iterating through the vertices until it find the one whose distance from the 
+first one is bigget than half of the boundary length).
+The Laplacian matrix is constructed by iterating over the polygons (to be able to not differentiate between interior
+and boundary vertex in the calculation).
+
+
+------- Ex3 Plugin -------
+
+this plugin implements the SpaceDeformer2D node, which allows 2D shape deformation using 2 methods --
+Cauchy-Green coordinates and (bonus) vertex-interpolating Cauchy coordinates.
+
+Defining or undefining GPU_PROC in SpaceDeformer2D.h will change whether the computations are done on the cpu
+via gmm's matrix multiplication function (if undefined) or on the gpu using matlab's parallel computing
+toolbox (if defined). The second method should work but it is sadly untested, since Yair has no compatible gpu
+and Tal has not enough free space on his computer to download the toolbox.
+
+The syntax to use the deformer node is as explained in the guide -- use the image command in the DGP shelf
+to create the cage, then use the TriangulatePolygonCmd command to triangulate it. Then choose using the channel
+box which of the two deformation methods should be used, and manipulate the cage using maya's provided tools.
+The interior of the image should deform in real time.
+---------------------------
+
+
