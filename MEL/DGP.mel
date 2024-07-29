@@ -1,0 +1,205 @@
+//in order to use mel functions which are defined in this script, you need to use the "source" MEL command in Maya's script editor.
+//for example:
+//source "C:/Data/Code/DGP_CODE_DIR/MEL/DGP.mel";
+//
+//note the use of / rather than \
+
+
+//the current script relies on functions from AEimagePlaneTemplate.mel, so we have to source it first
+string $maya_path = `getenv "MAYA_64_DIR"`;
+string $AEimagePlaneTemplate_fullPath = $maya_path + "/scripts/AETemplates/AEimagePlaneTemplate.mel";
+$source_command = "source \"" + $AEimagePlaneTemplate_fullPath + "\";";	
+eval $source_command;
+
+
+
+
+global proc set2DLayout()
+{
+	displayStyle -textured;
+	//modelEditor -e -grid 0 modelPanel4;
+	modelEditor -e -grid 1 modelPanel4;
+	modelEditor -e -smoothWireframe 1 modelPanel4;
+	lookThroughModelPanelClipped front modelPanel4 0.001 1000;
+	setAttr "frontShape.orthographicWidth" 20;
+	//setRendererInModelPanel hwRender_OpenGL_Renderer modelPanel4;
+	setRendererInModelPanel base_OpenGL_Renderer modelPanel4;
+}
+
+
+global proc togglePluginManagerWindow()
+{
+	int $pluginManagerWindowExists = `window -exists pluginManagerWindow`;
+
+		if(!$pluginManagerWindowExists)
+		{
+			PluginManager;
+		}
+		else
+		{
+			int $visible = `window -query -visible pluginManagerWindow`;
+				if($visible)
+				{
+					window -edit -visible 0 pluginManagerWindow;
+				}
+				else
+				{
+					window -edit -visible 1 pluginManagerWindow;
+				}
+		}
+}
+
+
+global proc createPolygonalCage()
+{
+	set2DLayout();
+	displayStyle -wireframe;
+	CreatePolygonTool;
+}
+
+
+//taken from C:\Program Files\Autodesk\Maya2008\scripts\AETemplates\AEfileTemplate.mel
+global proc myFileTextureNameChanged(string $fileNode)
+{
+	if (`getAttr ($fileNode + ".fileHasAlpha")` == 1)
+	{
+		string $dstNodeArray[];
+		
+		$dstNodeArray = `listConnections -source false -destination true ($fileNode + ".outColor")`;
+		
+		string $dstNode;
+		
+		for ($dstNode in $dstNodeArray)
+		{
+			if (	(isClassified($dstNode, "shader"))
+				&&	(size(`ls ($dstNode + ".transparency")`) != 0)
+				&&	(size(`ls ($dstNode + ".color")`) != 0)
+				&&	(`isConnected ($fileNode+".outColor") ($dstNode+".color")`)
+				&&	(size(`listConnections
+						-source true
+						-destination false
+						($dstNode + ".transparency")`) == 0))
+			{
+				connectAttr ($fileNode + ".outTransparency") ($dstNode + ".transparency");
+			}
+		}
+	}
+}
+
+//taken from C:\Program Files\Autodesk\Maya2008\scripts\AETemplates\AEfileTemplate.mel
+global proc int myAssignTextureCB(string $fileAttribute, string $filename, string $fileType)
+{
+	setAttr $fileAttribute -type "string" $filename;
+	string $currentDir = `workspace -q -dir`;
+    retainWorkingDirectory ($currentDir);
+	string $tokenArray[];
+	tokenize($fileAttribute, ".", $tokenArray);
+	string $fileNode = $tokenArray[0];
+	myFileTextureNameChanged($fileNode);
+	return true;
+}
+
+global proc createBackgroundImage()
+{
+	string $imagePlaneName = `createNode imagePlane`;
+	connectAttr -force ($imagePlaneName + ".message") ("frontShape.imagePlane[0]");
+	lookThroughModelPanelClipped front modelPanel4 0.001 1000;
+
+	string $command = ("AEimagePlaneBrowser \"AEassignImageCB " + $imagePlaneName + ".type " + $imagePlaneName + ".imageName\" " + $imagePlaneName);
+
+	print ($command + "\n");
+	eval($command);
+
+	setAttr ($imagePlaneName + ".lockedToCamera") 0;
+	setAttr ($imagePlaneName + ".width") 1.0;
+	setAttr ($imagePlaneName + ".height") 1.0;
+	setAttr ($imagePlaneName + ".imageCenterX") 0.5;
+	setAttr ($imagePlaneName + ".imageCenterY") 0.5;
+	setAttr ($imagePlaneName + ".imageCenterZ") -0.01;
+	setAttr "front.translateX" 0.5;
+	setAttr "front.translateY" 0.5;
+	modelEditor -e -grid 1 modelPanel4;
+	modelEditor -e -smoothWireframe 1 modelPanel4;
+	setAttr "frontShape.orthographicWidth" 2.0;
+	displayStyle -wireframe;
+	CreatePolygonTool;
+}
+
+
+global proc triangulateCage(int $numVertices)
+{
+	string $selectedNodes[] = `ls -selection -exactType "transform"`;
+	if(size($selectedNodes) != 1)
+	{
+		error("Select exactly one cage!\n");
+	}
+
+	string $returnStr[];
+
+	string $shapes[] = `listRelatives -shapes $selectedNodes[0]`;
+	
+	string $cageShape = $shapes[0];
+
+	string $meshName = `triangulatePolygon -numWantedVertices $numVertices -subsampleBoundary true $selectedNodes[0]`;
+
+	print ($meshName + "\n");
+	select -clear;
+	select $meshName;
+	hyperShade -assign lambert1 $meshName;
+
+	string $imagePlaneNames[] = `listConnections -destination 0 -source 1 frontShape.imagePlane[0]`;
+	$imageName = getAttr ($imagePlaneNames[0] + ".imageName");
+
+	string $file = `shadingNode -asTexture file`;
+	string $place2dTexture = `shadingNode -asUtility place2dTexture`;
+
+	connectAttr -f ($place2dTexture + ".coverage") ($file + ".coverage");
+	connectAttr -f ($place2dTexture + ".translateFrame") ($file + ".translateFrame");
+	connectAttr -f ($place2dTexture + ".rotateFrame") ($file + ".rotateFrame");
+	connectAttr -f ($place2dTexture + ".mirrorU") ($file + ".mirrorU");
+	connectAttr -f ($place2dTexture + ".mirrorV") ($file + ".mirrorV");
+	connectAttr -f ($place2dTexture + ".stagger") ($file + ".stagger");
+	connectAttr -f ($place2dTexture + ".wrapU") ($file + ".wrapU");
+	connectAttr -f ($place2dTexture + ".wrapV") ($file + ".wrapV");
+	connectAttr -f ($place2dTexture + ".repeatUV") ($file + ".repeatUV");
+	connectAttr -f ($place2dTexture + ".offset") ($file + ".offset");
+	connectAttr -f ($place2dTexture + ".rotateUV") ($file + ".rotateUV");
+	connectAttr -f ($place2dTexture + ".noiseUV") ($file + ".noiseUV");
+	connectAttr -f ($place2dTexture + ".vertexUvOne") ($file + ".vertexUvOne");
+	connectAttr -f ($place2dTexture + ".vertexUvTwo") ($file + ".vertexUvTwo");
+	connectAttr -f ($place2dTexture + ".vertexUvThree") ($file + ".vertexUvThree");
+	connectAttr -f ($place2dTexture + ".vertexCameraOne") ($file + ".vertexCameraOne");
+	connectAttr ($place2dTexture + ".outUV") ($file + ".uv");
+	connectAttr ($place2dTexture + ".outUvFilterSize") ($file + ".uvFilterSize");
+
+	connectAttr -force ($file + ".outColor") lambert1.color;
+	myAssignTextureCB ($file + ".fileTextureName") $imageName "image";
+
+	setAttr ($place2dTexture + ".wrapU") 0;
+	setAttr ($place2dTexture + ".wrapV") 0;
+
+	delete $imagePlaneNames[0];
+
+	string $deformers[] = `deformer -type "SpaceDeformer2D" $meshName`;
+	string $spaceDeformer = $deformers[0];
+	
+	connectAttr ($cageShape + ".worldMesh[0]") ($spaceDeformer + ".cage");
+
+	setAttr ($cageShape + ".displayBorders") 1;
+	setAttr ($cageShape + ".borderWidth") 14;
+	setAttr ($cageShape + ".vertexSize") 20;
+	//I'm not sure what's the exact effect of this attribute but what I want is to force the cage to only show it's wireframe and prevents shading of the interior
+	//In the past I removed the default shader that is attached each time a mesh is created. 
+	//This caused an issue that sometimes (seems arbitrary) the shader wasn't attached and an error occured when the code was trying to detach it.
+	//More importantly, in Viewport 2.0, when a shader is not attached, the faces of the mesh are rendered with annoying green color.
+	//Seeting ".holdOut" to true seems to block rendering of the cage an avoids these issues.
+	setAttr ($cageShape + ".holdOut") true;
+
+	displayStyle -textured;
+
+	select -r $meshName;
+	string $layerName = `createDisplayLayer`; //add the mesh to a new layer
+	setAttr ($layerName + ".displayType") 2; //make the layer a referenced protected layer
+
+	select -r $cageShape;
+}

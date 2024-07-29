@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Maya Commands">
+      <UniqueIdentifier>{39b4c90f-6157-4c9f-9203-824f751ae01f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Plugin">
+      <UniqueIdentifier>{a76e5340-aed5-48a3-b466-d0972dc294c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Matlab">
+      <UniqueIdentifier>{01d28b68-0b10-4c4d-9f6c-4715bbc5b37a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Macros">
+      <UniqueIdentifier>{a0704241-5b03-4530-b194-43e06a5a3563}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="2D Triangulation">
+      <UniqueIdentifier>{9f8ee0cb-8b71-4ae3-a3af-db5cdcea2e0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{ec25bbae-742d-497a-9123-54948eb3ed70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripts">
+      <UniqueIdentifier>{cd864a49-652b-451f-8a50-3817815451f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Maya Nodes">
+      <UniqueIdentifier>{bd1440fb-24e7-4ef5-8367-22f08dfb07ed}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Commands\TriangulatePolygonCmd.cpp">
+      <Filter>Maya Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\stdafx.cpp">
+      <Filter>Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="pluginMain.cpp">
+      <Filter>Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Utils\MatlabGMMDataExchange.cpp">
+      <Filter>Matlab</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Utils\MatlabInterface.cpp">
+      <Filter>Matlab</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Utils\triangle.c">
+      <Filter>2D Triangulation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Utils\triangulation.cpp">
+      <Filter>2D Triangulation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Utils\Maya_Utils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Utils\Utilities.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Nodes\SpaceDeformer2D.cpp">
+      <Filter>Maya Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Utils\Limit_Util.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Commands\colorMeshVerticesCmd.cpp">
+      <Filter>Maya Commands</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Commands\TriangulatePolygonCmd.h">
+      <Filter>Maya Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\stdafx.h">
+      <Filter>Plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utils\MatlabGMMDataExchange.h">
+      <Filter>Matlab</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utils\MatlabInterface.h">
+      <Filter>Matlab</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utils\GMM_Macros.h">
+      <Filter>Macros</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utils\Maya_Macros.h">
+      <Filter>Macros</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utils\STL_Macros.h">
+      <Filter>Macros</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utils\triangulation.h">
+      <Filter>2D Triangulation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utils\triangle.h">
+      <Filter>2D Triangulation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utils\Maya_Utils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utils\jet.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utils\Utilities.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Nodes\SpaceDeformer2D.h">
+      <Filter>Maya Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Utils\Limit_Util.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Commands\colorMeshVerticesCmd.h">
+      <Filter>Maya Commands</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\MEL\shelf_DGP.mel">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\MEL\DGP.mel">
+      <Filter>Scripts</Filter>
+    </None>
+  </ItemGroup>
+</Project>
